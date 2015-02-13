@@ -1,8 +1,8 @@
 # tag-queue
 
-This small library aims to organise your stripts using very simplified deferred pattern.
+This small library aims to organise your scripts using very simplified deferred pattern.
 
-Currenly lib weight only 744B (420B gzipped).
+Currenly lib weight only 741B (422B gzipped).
 
 ```javascript
 /**
