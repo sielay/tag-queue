@@ -1,0 +1,27 @@
+{
+  "name": "tag-queue",
+  "version": "0.0.1",
+  "description": "Organise scripts startup when dealing with tag manager",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sielay/tag-queue.git"
+  },
+  "author": "Lukasz Sielski <lukaszsielski@gmail.com> (http://lukaszsielski.pl)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sielay/tag-queue/issues"
+  },
+  "homepage": "https://github.com/sielay/tag-queue",
+  "devDependencies": {
+    "gulp": "^3.8.11",
+    "gulp-gzip": "0.0.8",
+    "gulp-mocha": "^2.0.0",
+    "gulp-uglify": "^1.1.0",
+    "mocha": "^2.1.0",
+    "should": "^5.0.0"
+  }
+}
