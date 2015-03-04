@@ -33,6 +33,11 @@
      */
     var tq = function (library, callback, timer) { // require lib
 
+        if(!(callback && callback.constructor && callback.call && callback.apply))
+        {
+            throw Error('Callback has to be a function.');
+        }
+
         // support for combined requirements
         if ( Array.isArray ? Array.isArray (library) : Object.prototype.toString.call (library) === '[object Array]' ) {
             var x, y = x = library.length;
@@ -102,11 +107,16 @@
      */
     tq.t = function (library) {
         repository[library] = repository[library] || [];
-        repository[library]._t = setInterval (function () {
-            if ( !!root[library] ) {
-                tq.got (library);
-            }
-        }, 100);
+
+        function tick() {
+            repository[library]._t = setTimeout (function () {
+                if ( !!root[library] ) {
+                    return tq.got (library);
+                }
+                tick();
+            }, 100);
+        }
+        tick();
     };
 
     return tq;
