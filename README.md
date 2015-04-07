@@ -2,46 +2,56 @@
 
 This small library aims to organise your scripts using very simplified deferred pattern.
 
-Currenly lib weight only 741B (422B gzipped).
+Currenly lib weight only 1378B (751B gzipped).
 
 ```javascript
 /**
  * Register load listener
  */ 
-lq('myLib', function() {
+tq('myLib', function() {
 	(…)
 });
+
+
+/**
+ * NOW! You can also load some libs with crossbrowser callback. Simply use http:// https:// or ://
+ */
+tq('https://connect.facebook.net/en_US/sdk.js', function() {
+  console.log('got Facebook SDK');
+});
+
 
 /**
  * Inform that lib has been loaded
  */
-lq.got('myLib'); 
+tq.got('myLib');
 
 /**
  * Adding true as second parameter makes lib observe window[<LIB_NAME>] and trigger callback once loaded.
  */
-lq('jquery', function() {
+tq('jquery', function() {
    console.log('got jQuery');
 }, true);
 
 /**
  * You can also require comined dependencies
  */ 
-lq(['jquery', 'myLib'], function(){
+tq(['jquery', 'myLib'], function(){
 	(...)
 });
 
 /**
  * And tell that we need to observe one specific lib
  */
-lq.t('jquery');
+tq.t('jquery');
 
 /**
  * As it's deferred you can also attach listeners after load event was triggered
  */
-lq('myLib', function() {
+tq('myLib', function() {
 	// will work even after lq.got('myLib') was fired
 });
+
 
 ```
 

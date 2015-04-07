@@ -1,6 +1,6 @@
 {
   "name": "tag-queue",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Organise scripts startup when dealing with tag manager",
   "main": "index.js",
   "scripts": {
