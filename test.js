@@ -1,6 +1,8 @@
 var
     window = {w : 1},
-    tq = require ('./index') (window),
+    tqLib = require('./index'),
+    tq = tqLib (window),
+    atomus = require ('atomus'),
     should = require ('should');
 
 describe ('load-queue', function () {
@@ -105,6 +107,22 @@ describe ('load-queue', function () {
         try { tq(['A'], true); } catch(e) { err++ };
         try { tq(['A'], false); } catch(e) { err++ };
         err.should.eql(5);
+
+    } );
+
+    it( 'Loads external libs', function(done) {
+
+        atomus ().html ('<html><head></head><body><div id="fb-root"></div></body></html>').ready(function (errors, window) {
+            var tq2 = tqLib(window);
+            should.not.exist(window.FB);
+            tq2('https://connect.facebook.net/en_US/sdk.js', function() {
+                should.exist(window.FB);
+                tq2('https://connect.facebook.net/en_US/sdk.js', function() {
+                    done();
+                });
+            });
+        });
+
 
     } );
 });

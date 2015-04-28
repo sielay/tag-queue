@@ -18,6 +18,8 @@
 
     'use strict';
 
+    var loadURLRegExp = /^(http|https|):\/\/(.+?)\/(.+)$/;
+
     // to support lack of console on IE
     var displayError = (console && console.log) ? console.error : function () {
     };
@@ -25,13 +27,40 @@
     // list of listeners and loaded libs
     var repository = {};
 
+    var externals = {};
+
+    var load = function(url) {
+        if(externals[url]) return;
+        if(!root.document) {
+            throw Error('URL loads are not supported without document');
+        }
+        var document = root.document,
+        head = document.getElementsByTagName("head")[0] || document.documentElement,
+        script = document.createElement("script");
+        script.src = url;
+        externals[url] = script;
+        script.onload = script.onreadystatechange = function() {
+            if ( externals[url] !== true && (!this.readyState ||
+                this.readyState === "loaded" || this.readyState === "complete") ) {
+                externals[url] = true;
+                // Handle memory leak in IE
+                script.onload = script.onreadystatechange = null;
+                if ( head && script.parentNode ) {
+                    head.removeChild( script );
+                }
+                tq.got(url);
+            }
+        };
+        head.insertBefore( script, head.firstChild );
+    };
+
     /**
      * Listen for lib to load
      * @param {String|Array} library - library name
      * @param {Function} callback - callback
-     * @param {Boolean} timer - decide, if we have to observer window for library addition
+     * @param {Boolean} useTimer - decide, if we have to observer window for library addition
      */
-    var tq = function (library, callback, timer) { // require lib
+    var tq = function (library, callback, useTimer) { // require lib
 
         if(!(callback && callback.constructor && callback.call && callback.apply))
         {
@@ -47,7 +76,7 @@
                     if ( x === 0 ) {
                         callback ();
                     }
-                }, timer)
+                }, useTimer)
             }
             return;
         }
@@ -63,8 +92,12 @@
         // append listener
         repository[library].push (callback);
 
+        if(loadURLRegExp.test(library)) {
+            load(library);
+        }
+
         // setup timers
-        if ( timer === true ) {
+        if ( useTimer === true ) {
             tq.t (library);
         }
     };
