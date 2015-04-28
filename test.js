@@ -122,7 +122,35 @@ describe ('load-queue', function () {
                 });
             });
         });
-
-
     } );
+
+    it('Uses global queue', function(done) {
+
+        var html = '';
+        html += '<html><head>';
+        html += '<script>var myOwnQueue = myOwnQueue || []; myOwnQueue.push(function(){ throw new Error(\'Hola!\');});</script>';
+        html += '</head><body>';
+        html += '<script>var myOwnQueue = myOwnQueue || []; myOwnQueue.push([\'abc\',function(t){ t.got(\'end\');}]);</script>';
+        html += '<script>var myOwnQueue = myOwnQueue || []; myOwnQueue.push([\'bca\',function(t){t.got(\'abc\');},true]);</script>';
+        html += '<script>var myOwnQueue = myOwnQueue || []; myOwnQueue.push(function(t){ t.got(\'bca\');});</script>';
+        html += '</body></html>';
+
+        atomus ().html (html).ready(function (errors, window) {
+            var tq2 = tqLib(window);
+            var errors = [];
+
+            window.myOwnQueue.push(['end', function(){
+                done();
+            }]);
+
+            tq2.process(window.myOwnQueue, function(callback) {
+                try {
+                    callback(tq2);
+                } catch(e) {
+                    errors.push(e);
+                }
+            });
+        });
+
+    });
 });

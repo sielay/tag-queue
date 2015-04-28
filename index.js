@@ -3,18 +3,8 @@
  * @param root - window or other THIS context
  * @param factory - library script
  */
-(function (root, factory) {
-    if ( typeof define === 'function' && define.amd ) {
-        return define (function () {
-            return factory;
-        });
-    }
-    if ( typeof exports === 'object' ) {
-        module.exports = factory;
-        return;
-    }
-    root.tq = factory (root);
-}) (this, function (root) {
+
+function tagQueueFactory(root) {
 
     'use strict';
 
@@ -35,8 +25,8 @@
             throw Error('URL loads are not supported without document');
         }
         var document = root.document,
-        head = document.getElementsByTagName("head")[0] || document.documentElement,
-        script = document.createElement("script");
+            head = document.getElementsByTagName("head")[0] || document.documentElement,
+            script = document.createElement("script");
         script.src = url;
         externals[url] = script;
         script.onload = script.onreadystatechange = function() {
@@ -54,6 +44,10 @@
         head.insertBefore( script, head.firstChild );
     };
 
+    var isArray = function(thing) {
+        return Array.isArray ? Array.isArray (thing) : Object.prototype.toString.call (thing) === '[object Array]';
+    }
+
     /**
      * Listen for lib to load
      * @param {String|Array} library - library name
@@ -68,7 +62,7 @@
         }
 
         // support for combined requirements
-        if ( Array.isArray ? Array.isArray (library) : Object.prototype.toString.call (library) === '[object Array]' ) {
+        if ( isArray(library) ) {
             var x, y = x = library.length;
             for ( var i = 0; i < y; i++ ) {
                 tq (library[i], function () {
@@ -83,7 +77,7 @@
 
         // has been already loaded
         if ( repository[library] === true ) {
-            return callback (); // fire
+            return callback (tq); // fire
         }
 
         // ensure entry exists
@@ -108,6 +102,8 @@
      */
     tq.got = function (library) {
 
+        var self = this;
+
         // ignore for already reported
         if ( repository[library] === true ) return;
 
@@ -123,7 +119,7 @@
             var callback = repository[library].shift ();
             while ( callback ) {
                 try {
-                    callback ();
+                    callback (tq);
                 } catch ( error ) {
                     displayError (error);
                 } finally {
@@ -152,5 +148,51 @@
         tick();
     };
 
+    tq.process = function(queue, wrapper) {
+        if(!queue || !queue.length) {
+            return;
+        }
+        if(!wrapper) {
+            wrapper = function(callback) {
+                try {
+                    callback(tq);
+                } catch(ex) {
+                    // unheld exception
+                }
+            };
+        }
+        var callback = queue.shift();
+        while(callback) {
+            if(isArray(callback)) {
+                (function(_callback, _wrapper){
+                    tq(_callback[0], function(){
+                        _wrapper(_callback[1]);
+                    },_callback[2]);
+                })(callback,wrapper);
+            } else {
+                wrapper(callback);
+            }
+            callback = queue.shift();
+        }
+    };
+
     return tq;
-});
+}
+
+(function (root, factory) {
+    if ( typeof define === 'function' && define.amd ) {
+        return define (function () {
+            return factory;
+        });
+    }
+    if ( typeof exports === 'object' ) {
+        module.exports = factory;
+        return;
+    }
+    root.tagQueue = factory (root);
+
+    if(!root.tq) {
+        root.tq = root.tagQueue; // back comaptibily
+    }
+
+}) (this, tagQueueFactory);
