@@ -4,7 +4,9 @@ var gulp = require ('gulp'),
 
 gulp.task ('compress', function () {
     gulp.src ('index.js')
-        .pipe (uglify ())
+        .pipe (uglify ({
+        bracketize: true
+    }))
         .pipe (gulp.dest ('dist'))
         .pipe (gzip ())
         .pipe (gulp.dest ('dist'))

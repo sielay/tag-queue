@@ -4,7 +4,7 @@
  * @param factory - library script
  */
 
-function tagQueueFactory(root) {
+function tagQueueFactory (root) {
 
     'use strict';
 
@@ -19,32 +19,32 @@ function tagQueueFactory(root) {
 
     var externals = {};
 
-    var load = function(url) {
-        if(externals[url]) return;
-        if(!root.document) {
-            throw Error('URL loads are not supported without document');
+    var load = function (url) {
+        if ( externals[url] ) return;
+        if ( !root.document ) {
+            throw Error ('URL loads are not supported without document');
         }
         var document = root.document,
-            head = document.getElementsByTagName("head")[0] || document.documentElement,
-            script = document.createElement("script");
+            head = document.getElementsByTagName ("head")[0] || document.documentElement,
+            script = document.createElement ("script");
         script.src = url;
         externals[url] = script;
-        script.onload = script.onreadystatechange = function() {
+        script.onload = script.onreadystatechange = function () {
             if ( externals[url] !== true && (!this.readyState ||
                 this.readyState === "loaded" || this.readyState === "complete") ) {
                 externals[url] = true;
                 // Handle memory leak in IE
                 script.onload = script.onreadystatechange = null;
                 if ( head && script.parentNode ) {
-                    head.removeChild( script );
+                    head.removeChild (script);
                 }
-                tq.got(url);
+                tq.got (url);
             }
         };
-        head.insertBefore( script, head.firstChild );
+        head.insertBefore (script, head.firstChild);
     };
 
-    var isArray = function(thing) {
+    var isArray = function (thing) {
         return Array.isArray ? Array.isArray (thing) : Object.prototype.toString.call (thing) === '[object Array]';
     }
 
@@ -56,13 +56,12 @@ function tagQueueFactory(root) {
      */
     var tq = function (library, callback, useTimer) { // require lib
 
-        if(!(callback && callback.constructor && callback.call && callback.apply))
-        {
-            throw Error('Callback has to be a function.');
+        if ( !(callback && callback.constructor && callback.call && callback.apply) ) {
+            throw Error ('Callback has to be a function.');
         }
 
         // support for combined requirements
-        if ( isArray(library) ) {
+        if ( isArray (library) ) {
             var x, y = x = library.length;
             for ( var i = 0; i < y; i++ ) {
                 tq (library[i], function () {
@@ -86,8 +85,8 @@ function tagQueueFactory(root) {
         // append listener
         repository[library].push (callback);
 
-        if(loadURLRegExp.test(library)) {
-            load(library);
+        if ( loadURLRegExp.test (library) ) {
+            load (library);
         }
 
         // setup timers
@@ -137,43 +136,48 @@ function tagQueueFactory(root) {
     tq.t = function (library) {
         repository[library] = repository[library] || [];
 
-        function tick() {
+        function tick () {
             repository[library]._t = setTimeout (function () {
                 if ( !!root[library] ) {
                     return tq.got (library);
                 }
-                tick();
+                tick ();
             }, 100);
         }
-        tick();
+
+        tick ();
     };
 
-    tq.process = function(queue, wrapper) {
-        if(!queue || !queue.length) {
-            return;
-        }
-        if(!wrapper) {
-            wrapper = function(callback) {
-                try {
-                    callback(tq);
-                } catch(ex) {
-                    // unheld exception
-                }
-            };
-        }
-        var callback = queue.shift();
-        while(callback) {
-            if(isArray(callback)) {
-                (function(_callback, _wrapper){
-                    tq(_callback[0], function(){
-                        _wrapper(_callback[1]);
-                    },_callback[2]);
-                })(callback,wrapper);
-            } else {
-                wrapper(callback);
+    tq.process = function (queue, wrapper) {
+        if ( queue || queue.length ) {
+
+            if ( !wrapper ) {
+                wrapper = function (callback) {
+                    try {
+                        callback (tq);
+                    } catch ( ex ) {
+                        // unheld exception
+                    }
+                };
             }
-            callback = queue.shift();
+            var callback = queue.shift ();
+            while ( callback ) {
+                if ( isArray (callback) ) {
+                    (function (_callback, _wrapper) {
+                        tq (_callback[0], function () {
+                            _wrapper (_callback[1]);
+                        }, _callback[2]);
+                    }) (callback, wrapper);
+                } else {
+                    wrapper (callback);
+                }
+                callback = queue.shift ();
+            }
         }
+
+        setTimeout (function () {
+            tq.process (queue, wrapper); // observe
+        }, 250);
     };
 
     return tq;
@@ -191,8 +195,8 @@ function tagQueueFactory(root) {
     }
     root.tagQueue = factory (root);
 
-    if(!root.tq) {
+    if ( !root.tq ) {
         root.tq = root.tagQueue; // back comaptibily
     }
 
-}) (this, tagQueueFactory);
+}) (this, tagQueueFactory); // change to this to window for tealium
