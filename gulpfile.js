@@ -16,7 +16,7 @@ gulp.task ('compress', function () {
 
     gulp.src ('index.js')
         .pipe (replace (/\/\* UMD \*\/([\s\S]*?)\/\* \/UMD \*\//, ''))
-        .pipe (wrap('(function(win) { <%= contents %>!window.tagQueue = tagQueueFactory(win); })(window);'))
+        .pipe (wrap('(function(win) { <%= contents %>window.tagQueue = tagQueueFactory(win); })(window);'))
         .pipe (uglify ({
         bracketize : true
     }))
