@@ -25,6 +25,9 @@
     "should": "^5.0.0"
   },
   "dependencies": {
-    "atomus": "^0.1.14"
+    "atomus": "^0.1.14",
+    "gulp-rename": "^1.2.2",
+    "gulp-replace": "^0.5.3",
+    "gulp-wrap": "^0.11.0"
   }
 }

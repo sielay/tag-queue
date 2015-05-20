@@ -192,7 +192,7 @@ function tagQueueFactory (root) {
 
     return tq;
 }
-
+/* UMD */
 (function (root, factory) {
     if ( typeof define === 'function' && define.amd ) {
         return define (function () {
@@ -206,7 +206,8 @@ function tagQueueFactory (root) {
     root.tagQueue = factory (root);
 
     if ( !root.tq ) {
-        root.tq = root.tagQueue; // back comaptibily
+        root.tq = root.tagQueue; // back compatibility
     }
 
 }) (this, tagQueueFactory); // change to this to window for tealium
+/* /UMD */
