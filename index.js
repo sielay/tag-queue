@@ -129,6 +129,16 @@ function tagQueueFactory (root) {
         repository[library] = true;
     };
 
+    function deepInspect(parent, path) {
+        if(!parent) return null;
+        if(path.indexOf('.') > -1) {
+            var elems = path.split('.'), current = elems.shift();
+            return deepInspect(parent[current],elems.join('.'));
+        } else {
+            return parent[path];
+        }
+    };
+
     /**
      * Inform registry that specific library require observing window
      * @param {String} library
@@ -138,7 +148,7 @@ function tagQueueFactory (root) {
 
         function tick () {
             repository[library]._t = setTimeout (function () {
-                if ( !!root[library] ) {
+                if ( !!deepInspect(root, library) ) {
                     return tq.got (library);
                 }
                 tick ();

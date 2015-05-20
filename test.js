@@ -1,6 +1,6 @@
 var
     window = {w : 1},
-    tqLib = require('./index'),
+    tqLib = require ('./index'),
     tq = tqLib (window),
     atomus = require ('atomus'),
     should = require ('should');
@@ -98,33 +98,64 @@ describe ('load-queue', function () {
 
     });
 
-    it ( 'Reject non-function callbacks', function () {
+    it ('Reject non-function callbacks', function () {
         var err = 0
-        try { tq(['A'], 'string'); } catch(e) { err++ };
-        try { tq(['A'], 123 ); } catch(e) { err++ };
-        try { tq(['A'], {}); } catch(e) { err++ };
-        try { tq(['A'], function(){}); } catch(e) { err++ };
-        try { tq(['A'], true); } catch(e) { err++ };
-        try { tq(['A'], false); } catch(e) { err++ };
-        err.should.eql(5);
+        try {
+            tq (['A'], 'string');
+        } catch ( e ) {
+            err++
+        }
+        ;
+        try {
+            tq (['A'], 123);
+        } catch ( e ) {
+            err++
+        }
+        ;
+        try {
+            tq (['A'], {});
+        } catch ( e ) {
+            err++
+        }
+        ;
+        try {
+            tq (['A'], function () {
+            });
+        } catch ( e ) {
+            err++
+        }
+        ;
+        try {
+            tq (['A'], true);
+        } catch ( e ) {
+            err++
+        }
+        ;
+        try {
+            tq (['A'], false);
+        } catch ( e ) {
+            err++
+        }
+        ;
+        err.should.eql (5);
 
-    } );
+    });
 
-    it( 'Loads external libs', function(done) {
+    it ('Loads external libs', function (done) {
 
-        atomus ().html ('<html><head></head><body><div id="fb-root"></div></body></html>').ready(function (errors, window) {
-            var tq2 = tqLib(window);
-            should.not.exist(window.FB);
-            tq2('https://connect.facebook.net/en_US/sdk.js', function() {
-                should.exist(window.FB);
-                tq2('https://connect.facebook.net/en_US/sdk.js', function() {
-                    done();
+        atomus ().html ('<html><head></head><body><div id="fb-root"></div></body></html>').ready (function (errors, window) {
+            var tq2 = tqLib (window);
+            should.not.exist (window.FB);
+            tq2 ('https://connect.facebook.net/en_US/sdk.js', function () {
+                should.exist (window.FB);
+                tq2 ('https://connect.facebook.net/en_US/sdk.js', function () {
+                    done ();
                 });
             });
         });
-    } );
+    });
 
-    it('Uses global queue', function(done) {
+    it ('Uses global queue', function (done) {
 
         var html = '';
         html += '<html><head>';
@@ -135,22 +166,58 @@ describe ('load-queue', function () {
         html += '<script>var myOwnQueue = myOwnQueue || []; myOwnQueue.push(function(t){ t.got(\'bca\');});</script>';
         html += '</body></html>';
 
-        atomus ().html (html).ready(function (errors, window) {
-            var tq2 = tqLib(window);
+        atomus ().html (html).ready (function (errors, window) {
+            var tq2 = tqLib (window);
             var errors = [];
 
-            window.myOwnQueue.push(['end', function(){
-                done();
+            window.myOwnQueue.push (['end', function () {
+                done ();
             }]);
 
-            tq2.process(window.myOwnQueue, function(callback) {
+            tq2.process (window.myOwnQueue, function (callback) {
                 try {
-                    callback(tq2);
-                } catch(e) {
-                    errors.push(e);
+                    callback (tq2);
+                } catch ( e ) {
+                    errors.push (e);
                 }
             });
         });
+
+    });
+
+    it ('Understand window observe', function (done) {
+        var newWindow = {w : 1};
+        var tq2 = tqLib (newWindow);
+        tq2 ('element', function () {
+            should.exists (newWindow.element);
+            done ();
+        }, true);
+
+        setTimeout (function () {
+            newWindow.element = {};
+        }, 1000)
+    });
+
+    it ('Understands dot in window observe', function (done) {
+        var newWindow = {w : 1};
+        var tq2 = tqLib (newWindow);
+        tq2 ('element.item.subItem', function () {
+            should.exists (newWindow.element);
+            should.exists (newWindow.element.item);
+            should.exists (newWindow.element.item.subItem);
+            done ();
+        }, true);
+
+        setTimeout (function () {
+            newWindow.element = {
+                item : {}
+            };
+            setTimeout (function () {
+                newWindow.element.item = {
+                    subItem : true
+                };
+            });
+        }, 1000)
 
     });
 });
